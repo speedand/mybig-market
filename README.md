@@ -1,2 +1,2 @@
-# DDD 脚手架
+rule-weight实现
 
