@@ -1,2 +1,2 @@
-rule-weight实现
+rule-center实现
 
