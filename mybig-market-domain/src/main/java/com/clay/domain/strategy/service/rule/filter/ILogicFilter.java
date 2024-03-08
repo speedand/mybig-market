@@ -1,4 +1,4 @@
-package com.clay.domain.strategy.service.rule;
+package com.clay.domain.strategy.service.rule.filter;
 
 import com.clay.domain.strategy.model.entity.RuleActionEntity;
 import com.clay.domain.strategy.model.entity.RuleMatterEntity;
