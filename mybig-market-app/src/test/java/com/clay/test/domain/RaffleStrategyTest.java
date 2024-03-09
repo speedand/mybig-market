@@ -1,12 +1,11 @@
 package com.clay.test.domain;
 
+import com.alibaba.fastjson.JSON;
 import com.clay.domain.strategy.model.entity.RaffleAwardEntity;
 import com.clay.domain.strategy.model.entity.RaffleFactorEntity;
 import com.clay.domain.strategy.service.IRaffleStrategy;
 import com.clay.domain.strategy.service.armory.IStrategyArmory;
 import com.clay.domain.strategy.service.rule.chain.impl.RuleWeightLogicChain;
-import com.clay.domain.strategy.service.rule.filter.impl.RuleLockLogicFilter;
-import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,8 +32,6 @@ public class RaffleStrategyTest {
     @Resource
     private RuleWeightLogicChain ruleWeightLogicChain;
 
-    @Resource
-    private RuleLockLogicFilter ruleLockLogicFilter;
 
     @Before
     public void setUp() {
@@ -45,7 +42,7 @@ public class RaffleStrategyTest {
 
         // 通过反射 mock 规则中的值
         ReflectionTestUtils.setField(ruleWeightLogicChain, "userScore", 4500L);
-        ReflectionTestUtils.setField(ruleLockLogicFilter, "userRaffleCount", 10L);
+
     }
 
     @Test

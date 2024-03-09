@@ -7,9 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
- * @author Fuzhengwei bugstack.cn @小傅哥
  * @description 库存扣减节点
- * @create 2024-01-27 11:25
  */
 @Slf4j
 @Component("rule_stock")
