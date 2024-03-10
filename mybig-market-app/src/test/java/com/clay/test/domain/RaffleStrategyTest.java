@@ -1,11 +1,14 @@
 package com.clay.test.domain;
 
-import com.alibaba.fastjson.JSON;
 import com.clay.domain.strategy.model.entity.RaffleAwardEntity;
 import com.clay.domain.strategy.model.entity.RaffleFactorEntity;
+import com.clay.domain.strategy.model.valobj.StrategyAwardStockKeyVO;
+import com.clay.domain.strategy.service.IRaffleStock;
 import com.clay.domain.strategy.service.IRaffleStrategy;
 import com.clay.domain.strategy.service.armory.IStrategyArmory;
 import com.clay.domain.strategy.service.rule.chain.impl.RuleWeightLogicChain;
+import com.clay.domain.strategy.service.rule.tree.impl.RuleLockLogicTreeNode;
+import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +18,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.annotation.Resource;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * @description 抽奖策略测试
@@ -28,40 +32,47 @@ public class RaffleStrategyTest {
     private IStrategyArmory strategyArmory;
     @Resource
     private IRaffleStrategy raffleStrategy;
-
     @Resource
     private RuleWeightLogicChain ruleWeightLogicChain;
+    @Resource
+    private RuleLockLogicTreeNode ruleLockLogicTreeNode;
 
+    @Resource
+    private IRaffleStock raffleStock;
 
     @Before
     public void setUp() {
         // 策略装配 100001、100002、100003
-        log.info("测试结果：{}", strategyArmory.assembleLotteryStrategy(100001L));
-        log.info("测试结果：{}", strategyArmory.assembleLotteryStrategy(100002L));
-        log.info("测试结果：{}", strategyArmory.assembleLotteryStrategy(100003L));
+//        log.info("测试结果：{}", strategyArmory.assembleLotteryStrategy(100001L));
+        log.info("测试结果：{}", strategyArmory.assembleLotteryStrategy(100006L));
 
         // 通过反射 mock 规则中的值
-        ReflectionTestUtils.setField(ruleWeightLogicChain, "userScore", 4500L);
-
+        ReflectionTestUtils.setField(ruleWeightLogicChain, "userScore", 4900L);
+        ReflectionTestUtils.setField(ruleLockLogicTreeNode, "userRaffleCount", 10L);
     }
 
     @Test
-    public void test_performRaffle() {
-        RaffleFactorEntity raffleFactorEntity = RaffleFactorEntity.builder()
-                .userId("clay")
-                .strategyId(100001L)
-                .build();
+    public void test_performRaffle() throws InterruptedException {
+        for (int i = 0; i < 3; i++) {
+            RaffleFactorEntity raffleFactorEntity = RaffleFactorEntity.builder()
+                    .userId("clay")
+                    .strategyId(100006L)
+                    .build();
 
-        RaffleAwardEntity raffleAwardEntity = raffleStrategy.performRaffle(raffleFactorEntity);
+            RaffleAwardEntity raffleAwardEntity = raffleStrategy.performRaffle(raffleFactorEntity);
 
-        log.info("请求参数：{}", JSON.toJSONString(raffleFactorEntity));
-        log.info("测试结果：{}", JSON.toJSONString(raffleAwardEntity));
+            log.info("请求参数：{}", JSON.toJSONString(raffleFactorEntity));
+            log.info("测试结果：{}", JSON.toJSONString(raffleAwardEntity));
+        }
+
+        // 等待 UpdateAwardStockJob 消费队列
+        new CountDownLatch(1).await();
     }
 
     @Test
     public void test_performRaffle_blacklist() {
         RaffleFactorEntity raffleFactorEntity = RaffleFactorEntity.builder()
-                .userId("user001")  // 黑名单用户 user001,user002,user003
+                .userId("user003")  // 黑名单用户 user001,user002,user003
                 .strategyId(100001L)
                 .build();
 
@@ -76,7 +87,7 @@ public class RaffleStrategyTest {
      * ReflectionTestUtils.setField(ruleLockLogicFilter, "userRaffleCount", 10L);
      */
     @Test
-    public void test_raffle_center_rule_lock(){
+    public void test_raffle_center_rule_lock() {
         RaffleFactorEntity raffleFactorEntity = RaffleFactorEntity.builder()
                 .userId("clay")
                 .strategyId(100003L)
@@ -86,6 +97,12 @@ public class RaffleStrategyTest {
 
         log.info("请求参数：{}", JSON.toJSONString(raffleFactorEntity));
         log.info("测试结果：{}", JSON.toJSONString(raffleAwardEntity));
+    }
+
+    @Test
+    public void test_takeQueueValue() throws InterruptedException {
+        StrategyAwardStockKeyVO strategyAwardStockKeyVO = raffleStock.takeQueueValue();
+        log.info("测试结果：{}", JSON.toJSONString(strategyAwardStockKeyVO));
     }
 
 }

@@ -5,6 +5,7 @@ import com.clay.domain.strategy.model.entity.StrategyEntity;
 import com.clay.domain.strategy.model.entity.StrategyRuleEntity;
 import com.clay.domain.strategy.model.valobj.RuleTreeVO;
 import com.clay.domain.strategy.model.valobj.StrategyAwardRuleModelVO;
+import com.clay.domain.strategy.model.valobj.StrategyAwardStockKeyVO;
 
 import java.util.List;
 import java.util.Map;
@@ -34,4 +35,14 @@ public interface IStrategyRepository {
     StrategyAwardRuleModelVO queryStrategyAwardRuleModelVO(Long strategyId, Integer awardId);
 
     RuleTreeVO queryRuleTreeVOByTreeId(String treeId);
+
+    void cacheStrategyAwardCount(String cacheKey, Integer awardCount);
+
+    Boolean subtractionAwardStock(String cacheKey);
+
+    void awardStockConsumeSendQueue(StrategyAwardStockKeyVO strategyAwardStockKeyVO);
+
+    StrategyAwardStockKeyVO takeQueueValue();
+
+    void updateStrategyAwardStock(Long strategyId, Integer awardId);
 }
